@@ -9,4 +9,7 @@ public interface IAccount {
 	public String getCurrency();
 	public void debit(AccountingEntry entry) throws Exception;
 	public void credit(AccountingEntry entry) throws Exception;
+	public void closingRun(String date);
+	public String getBalanceHistory();
+	
 }

@@ -50,18 +50,13 @@ public class ABCDownloader {
 						"/wEWJQL58tAdAo+CnjsC7LLy0AMCzsPYqw4CzM7D7gECt7vrug0C6ey36QwCmLHeqQ4Cs5r8vggC58Gmvw4C2qfbwg4Cl4yI/QYC2PCj0wsC3LqTugIC8brTugICpqOX+QgCwsOgvgECz+3rxA8Ci4u3xg0C9Nmq0gsC48j0ogICl5jS5Q0CsYn5lwsCoMSE1A0C9e377AwCmZrc5gsCzeqNkAIC5LLOmgMC+sauvAwC88aGwwQCnpu8mAgCjv/pwg8C6+3nrgwC/PC9+gcCnOOzhwECn5vYgwgC9aDN9gh5NAMpv9uGgiyOV61kL4NR+/x42A=="));
 		// parameters.add(new BasicNameValuePair("ctl00$txtAutoComplete",""));
 		parameters.add(new BasicNameValuePair("ctl00$BodyABC$srdp", "on"));
-		parameters
-				.add(new BasicNameValuePair("ctl00$BodyABC$eurolistAp", "on"));
-		parameters
-				.add(new BasicNameValuePair("ctl00$BodyABC$eurolistBp", "on"));
-		parameters
-				.add(new BasicNameValuePair("ctl00$BodyABC$eurolistCp", "on"));
-		parameters.add(new BasicNameValuePair("ctl00$BodyABC$alterp", "on"));
-		parameters.add(new BasicNameValuePair("ctl00$BodyABC$mlterp", "on"));
-		parameters.add(new BasicNameValuePair("ctl00$BodyABC$ImageButton1.x",
-				"16"));
-		parameters.add(new BasicNameValuePair("ctl00$BodyABC$ImageButton1.y",
-				"24"));
+		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistAp", "on"));
+		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistBp", "on"));
+		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistCp", "on"));
+		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$alterp", "on"));
+		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$mlterp", "on"));
+		parameters.add(new BasicNameValuePair("ctl00$BodyABC$ImageButton1.x","16"));
+		parameters.add(new BasicNameValuePair("ctl00$BodyABC$ImageButton1.y","24"));
 
 		UrlEncodedFormEntity sendentity = new UrlEncodedFormEntity(parameters,
 				HTTP.UTF_8);

@@ -1,8 +1,12 @@
 package blackbox.main;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import blackbox.bank.Bank;
+import blackbox.data.Downloader;
 import blackbox.exchange.InterdayExchange;
 import blackbox.strategy.FirstStrategy;
 
@@ -29,13 +33,21 @@ public class Main {
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-		exchange.registerInterdayStrategy(new FirstStrategy());
+		exchange.registerInterdayStrategy(new FirstStrategy(exchange));
 		bank.printBalanceSheet();
 		System.out.print(bank.getAccount("trader 1"));
 		System.out.print(bank.getAccount("trader 2"));
 		System.out.print(bank.getAccount("FirstStrategy"));
 		System.out.print(bank.getAccount(bank.EXCHANGE_ACCOUNT));
-		
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		try{
+			exchange.replay(dateFormat.parse("01-01-2000"), dateFormat.parse("14-05-2011"));
+
+			System.out.print(bank.getAccount("FirstStrategy"));
+			Downloader.saveToFile(bank.getAccount("FirstStrategy").getBalanceHistory(),Downloader.PATH+"../FirstStrategy.csv");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}	
 	}
 
 }

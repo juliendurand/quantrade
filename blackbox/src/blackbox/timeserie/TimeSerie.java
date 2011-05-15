@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import blackbox.data.CSVFileReader;
 import blackbox.data.Downloader;
@@ -18,7 +19,7 @@ public class TimeSerie {
 	private DateFormat _dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	private String _ticker;
 	private Map<Date, DailyCandle> _candles = new HashMap<Date, DailyCandle>();
-	private Date _cursor;
+	private int _cursor = -1;
 	private List<Date> _dateIndex;
 	
 	public TimeSerie(String ticker) throws Exception{
@@ -54,18 +55,32 @@ public class TimeSerie {
 		Collections.sort(_dateIndex);
 	}
 	
+	public void setCursorBefore(Date date){
+		int index = Collections.binarySearch(_dateIndex, date);
+		if(index>0){ // traded on that day
+			_cursor = index-1;
+		}
+	}
+	
+	public Set<Date> getTradingDays(){
+		return _candles.keySet();
+	}
+	
 	public DailyCandle getLastCandle(){
 		return _candles.get(_dateIndex.get(_dateIndex.size()-1));
 	}
 	
 	public DailyCandle getCandle(String dateString) throws Exception{
 		Date date = _dateFormatter.parse(dateString);
+		return getCandle(date);
+	}
+	
+	public DailyCandle getCandle(Date date) throws Exception{
 		return _candles.get(date);
 	}
 	
 	public DailyCandle getCandle(int period) throws Exception{
-		int index = Collections.binarySearch(_dateIndex, _cursor);
-		int position = index-period;
+		int position = _cursor-period;
 		if(position<0){
 			throw new Exception("TimeSerie error - request data before the begining of the serie");
 		}

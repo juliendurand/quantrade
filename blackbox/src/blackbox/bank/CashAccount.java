@@ -8,6 +8,7 @@ public class CashAccount implements IAccount {
 	private EAccountType _type;
 	private BigDecimal _balance = BigDecimal.ZERO;
 	private String Currency = "EUR";
+	private StringBuffer _balanceHistory = new StringBuffer();
 	
 	public CashAccount(String id, EAccountType type){
 		_id = id;
@@ -60,6 +61,19 @@ public class CashAccount implements IAccount {
 		default:
 			throw new Exception();
 		}
+	}
+	
+	@Override
+	public void closingRun(String date){
+		_balanceHistory.append(date);
+		_balanceHistory.append(", ");
+		_balanceHistory.append(getBalance("EUR"));
+		_balanceHistory.append("\n");
+	}
+	
+	@Override
+	public String getBalanceHistory(){
+		return _balanceHistory.toString();
 	}
 
 }
