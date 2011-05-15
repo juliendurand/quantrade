@@ -2,9 +2,9 @@ package blackbox.exchange;
 
 import java.math.BigDecimal;
 
-public interface IExchange {
+import blackbox.bank.IMarketPriceSource;
 
-	public abstract BigDecimal getInstumentOfficialPrice(String ticker) throws Exception;
+public interface IExchange extends IMarketPriceSource{
 	
 	public abstract long getExchangeTime();
 
@@ -12,8 +12,8 @@ public interface IExchange {
 
 	public abstract void replay(String start, String end);
 
-	public abstract void registerOrder();
+	public abstract void registerOrder(IOrder order);
 
-	public abstract void cancelOrder();
+	public abstract void cancelOrder(String orderId) throws Exception;
 
 }

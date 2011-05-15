@@ -7,9 +7,15 @@ import java.util.Map;
 public class TradingAccount extends CashAccount{
 
 	private Map<String, Position> _positions = new HashMap<String, Position>();
+	private IMarketPriceSource _marketPriceSource;
 	
-	public TradingAccount(String id, EAccountType type) {
+	public TradingAccount(String id, EAccountType type, IMarketPriceSource source) {
 		super(id, type);
+		_marketPriceSource = source;
+	}
+	
+	public void setMarketPriceSource(IMarketPriceSource source){
+		_marketPriceSource = source;
 	}
 
 	@Override
@@ -74,7 +80,13 @@ public class TradingAccount extends CashAccount{
 		BigDecimal sumPositions = BigDecimal.ZERO;
 		for(Position p : _positions.values()){
 			BigDecimal quantity = p.getQuantity();
-			BigDecimal price = p.getPrice();
+			BigDecimal price = BigDecimal.ZERO;
+			try{
+				price = _marketPriceSource.getMarketOfficialPrice(p.getTicker());
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 			BigDecimal value = quantity.multiply(price);
 			sumPositions = sumPositions.add(value);
 		}

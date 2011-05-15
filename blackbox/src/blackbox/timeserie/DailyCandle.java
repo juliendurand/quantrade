@@ -11,6 +11,7 @@ public class DailyCandle {
 	private BigDecimal _low;
 	private BigDecimal _close;
 	private BigDecimal _volume;
+	private BigDecimal _adjClose;
 	
 	public Date getDate() {
 		return _date;
@@ -58,6 +59,14 @@ public class DailyCandle {
 	
 	public void setVolume(BigDecimal volume) {
 		_volume = volume;
+	}
+	
+	public void setAdjustedClose(BigDecimal adjustedClose){
+		_adjClose = adjustedClose;
+	}
+	
+	public BigDecimal getAdjustedClose(){
+		return _adjClose;
 	}
 	
 }

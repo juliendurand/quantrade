@@ -15,11 +15,12 @@ public class Bank {
 	private String _name = "Blackbox Bank";
 	private String _currency = "EUR";
 	private Map<String, IAccount> _accounts = new HashMap<String, IAccount>();
+	private IMarketPriceSource _marketPriceSource;
 
 	public Bank(){
 		addAccount(new CashAccount(CASH_ACCOUNT, EAccountType.Asset));
-		addAccount(new TradingAccount(EXCHANGE_ACCOUNT, EAccountType.Asset));
-		addAccount(new TradingAccount(REVENUE_ACCOUNT, EAccountType.Liability));
+		addAccount(new TradingAccount(EXCHANGE_ACCOUNT, EAccountType.Asset, _marketPriceSource));
+		addAccount(new CashAccount(REVENUE_ACCOUNT, EAccountType.Liability));
 	}
 	
 	public String getName(){
@@ -30,8 +31,25 @@ public class Bank {
 		return _currency;
 	}
 	
-	public void addAccount(IAccount account){
+	public void setMarketPriceSource(IMarketPriceSource source){
+		_marketPriceSource = source;
+		for(IAccount account : _accounts.values()){
+			if(account instanceof TradingAccount){
+				((TradingAccount) account).setMarketPriceSource(source);
+			}
+		}
+	}
+	
+	private void addAccount(IAccount account){
 		_accounts.put(account.getId(), account);
+	}
+	
+	public void createCashAccount(String id){
+		addAccount(new CashAccount(id, EAccountType.Liability));
+	}
+	
+	public void createTradingAccount(String id){
+		addAccount(new TradingAccount(id, EAccountType.Liability, _marketPriceSource));
 	}
 	
 	public void deleteAccount(String accountId) throws Exception{
@@ -39,6 +57,10 @@ public class Bank {
 			throw new Exception("Delete account : Bad accound Id");
 		}
 		_accounts.remove(accountId);
+	}
+	
+	public IAccount getAccount(String accountId){
+		return _accounts.get(accountId);
 	}
 	
 	public boolean checkBalance() throws Exception{
@@ -163,22 +185,4 @@ public class Bank {
 		System.out.print(buffer);
 	}
 
-	public static void main(String[] params){
-		Bank bank = new Bank();
-		bank.addAccount(new TradingAccount("trader 1", EAccountType.Liability));
-		bank.addAccount(new TradingAccount("trader 2", EAccountType.Liability));
-		try{
-			bank.makeDeposit("trader 1", BigDecimal.valueOf(1874.72), "EUR");	
-			bank.makeDeposit("trader 2", BigDecimal.valueOf(1000.00), "EUR");
-			bank.BuyInstrument("trader 1", "FTE.PA", BigDecimal.valueOf(28), BigDecimal.valueOf(15.73d), "EUR");
-			bank.BuyInstrument("trader 2", "FTE.PA", BigDecimal.valueOf(28), BigDecimal.valueOf(15.73d), "EUR");
-			bank.SellInstrument("trader 2", "FTE.PA", BigDecimal.valueOf(28), BigDecimal.valueOf(15.98d), "EUR");
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		bank.printBalanceSheet();
-		//System.out.print(bank._accounts.get("trader 1"));
-		System.out.print(bank._accounts.get("trader 2"));
-		System.out.print(bank._accounts.get(bank.EXCHANGE_ACCOUNT));
-	}
 }
