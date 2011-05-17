@@ -2,6 +2,8 @@ package blackbox.timeserie;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DailyCandle {
 	
@@ -12,6 +14,7 @@ public class DailyCandle {
 	private BigDecimal _close;
 	private BigDecimal _volume;
 	private BigDecimal _adjClose;
+	private Map<String, Object> _indicators = new HashMap<String, Object>();
 	
 	public Date getDate() {
 		return _date;
@@ -67,6 +70,14 @@ public class DailyCandle {
 	
 	public BigDecimal getAdjustedClose(){
 		return _adjClose;
+	}
+	
+	public Object getIndicator(String name){
+		return _indicators.get(name);
+	}
+	
+	public void setIndicator(String name, Object o){
+		_indicators.put(name, o);
 	}
 	
 }

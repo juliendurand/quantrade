@@ -55,6 +55,10 @@ public class TimeSerie {
 		Collections.sort(_dateIndex);
 	}
 	
+	public String getTicker(){
+		return _ticker;
+	}
+	
 	public void setCursorBefore(Date date){
 		int index = Collections.binarySearch(_dateIndex, date);
 		if(index>0){ // traded on that day
@@ -85,6 +89,18 @@ public class TimeSerie {
 			throw new Exception("TimeSerie error - request data before the begining of the serie");
 		}
 		return _candles.get(_dateIndex.get(position));
+	}
+	
+	public void setToFirst(){
+		_cursor = 0;
+	}
+	
+	public boolean next(){
+		_cursor++;
+		if(_cursor>=_dateIndex.size()){
+			return false;
+		}
+		return true;
 	}
 	
 	public static void main(String[] args) throws Exception {

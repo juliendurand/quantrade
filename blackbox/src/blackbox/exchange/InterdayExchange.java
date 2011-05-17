@@ -18,6 +18,9 @@ import java.util.TreeSet;
 
 import blackbox.bank.Bank;
 import blackbox.data.ABCDownloader;
+import blackbox.indicator.IIndicator;
+import blackbox.indicator.PctChangeIndicator;
+import blackbox.indicator.PctRankIndicator;
 import blackbox.timeserie.DailyCandle;
 import blackbox.timeserie.TimeSerie;
 
@@ -59,6 +62,10 @@ public class InterdayExchange implements IExchange {
 			int index = Collections.binarySearch(_tickers, ticker);
 			_tickers.remove(index);
 		}
+		IIndicator pctChange = new PctChangeIndicator();
+		pctChange.calculate(_historicalTimeSeries, _tradingDays);
+		IIndicator pctRank = new PctRankIndicator();
+		pctRank.calculate(_historicalTimeSeries, _tradingDays);
 	}
 
 	public void registerInterdayStrategy(IInterdayStrategy strategy) {
