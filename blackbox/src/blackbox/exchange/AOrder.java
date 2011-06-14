@@ -5,7 +5,7 @@ import java.util.Date;
 
 public abstract class AOrder implements IOrder {
 
-	private long _seq = 1;
+	static private long _seq = 1;
 	private String _orderId;
 	private String _accoundId;
 	private String _ticker;

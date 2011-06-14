@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import blackbox.bank.Bank;
 import blackbox.data.Downloader;
 import blackbox.exchange.InterdayExchange;
+import blackbox.metric.StrategyPerformance;
 import blackbox.strategy.FirstStrategy;
 
 public class Main {
@@ -42,12 +43,13 @@ public class Main {
 		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		try{
 			exchange.replay(dateFormat.parse("01-01-2000"), dateFormat.parse("14-05-2011"));
-
 			System.out.print(bank.getAccount("FirstStrategy"));
-			Downloader.saveToFile(bank.getAccount("FirstStrategy").getBalanceHistory(),Downloader.PATH+"../FirstStrategy.csv");
+			Downloader.saveToFile(bank.getAccount("FirstStrategy").getBalanceHistory(),Downloader.PATH+"../FirstStrategy"+System.currentTimeMillis()+".csv");
 		}catch (Exception e) {
 			e.printStackTrace();
 		}	
+		StrategyPerformance perf = new StrategyPerformance(bank.getAccount("FirstStrategy").getHistory());
+		System.out.println(perf);
 	}
 
 }

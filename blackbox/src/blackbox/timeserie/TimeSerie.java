@@ -66,6 +66,13 @@ public class TimeSerie {
 		}
 	}
 	
+	public void setCursorOn(Date date){
+		int index = Collections.binarySearch(_dateIndex, date);
+		if(index>0){ // traded on that day
+			_cursor = index;
+		}
+	}
+	
 	public Set<Date> getTradingDays(){
 		return _candles.keySet();
 	}

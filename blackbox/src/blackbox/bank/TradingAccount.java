@@ -1,8 +1,15 @@
 package blackbox.bank;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.http.impl.cookie.DateUtils;
+
+import blackbox.exchange.InterdayExchange;
+import blackbox.exchange.MarketOrder;
+import blackbox.exchange.IOrder.OrderDirection;
 
 public class TradingAccount extends CashAccount{
 
@@ -16,6 +23,16 @@ public class TradingAccount extends CashAccount{
 	
 	public void setMarketPriceSource(IMarketPriceSource source){
 		_marketPriceSource = source;
+	}
+	
+	public void liquidate(InterdayExchange exchange){
+		for(Position p : _positions.values()){
+			if(p.getQuantity().compareTo(BigDecimal.ZERO)>0){
+				exchange.registerOrder(new MarketOrder(getId(), p.getTicker(), p.getQuantity(), OrderDirection.Sell, new Date(System.currentTimeMillis())));
+			}else{
+				exchange.registerOrder(new MarketOrder(getId(), p.getTicker(), p.getQuantity(), OrderDirection.Buy, new Date(System.currentTimeMillis())));
+			}
+		}
 	}
 
 	@Override

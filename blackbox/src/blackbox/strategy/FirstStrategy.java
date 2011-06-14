@@ -1,9 +1,15 @@
 package blackbox.strategy;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import blackbox.bank.TradingAccount;
 import blackbox.exchange.IInterdayStrategy;
 import blackbox.exchange.IOrder;
 import blackbox.exchange.InterdayExchange;
@@ -18,8 +24,9 @@ public class FirstStrategy implements IInterdayStrategy {
 
 	private InterdayExchange _exchange;
 	
-	private String _ticker;
+	private List<TickerPerformance> _tickers = new ArrayList<TickerPerformance>();
 	private BigDecimal _nbSharesTraded = BigDecimal.ZERO;
+	private int max =1;
 	
 	public FirstStrategy(InterdayExchange exchange){
 		_exchange = exchange;
@@ -37,47 +44,52 @@ public class FirstStrategy implements IInterdayStrategy {
 
 	@Override
 	public BigDecimal getStartingCapital() {
-		return BigDecimal.valueOf(100000.00d);
+		return BigDecimal.valueOf(10000.00d);
 	}
 
 	@Override
-	public void onDayStart() {
+	public void onDayStart() {	
+
+	}
+
+	private void getDayTopGainer() {
 		IIndicator pctChangeIndicator = new PctChangeIndicator();
+		String pctChangeName = pctChangeIndicator.getName();
 		IIndicator pctRankIndicator = new PctRankIndicator();
+		String rankName = pctRankIndicator.getName();
 		List<String> tickers = getExchange().getAllTickers();
-		double maxGain = 0d;
-		String tickerMaxGain = null;
+		//double maxGain = 0d;
+		//String tickerMaxGain = null;
+		_tickers.clear();
 		for(String ticker : tickers){
 			try {
-//				double yesterday = getExchange().getDailyCandle(ticker, 0).getAdjustedClose().doubleValue();
-//				double dayBeforeYesterday = getExchange().getDailyCandle(ticker, 1).getAdjustedClose().doubleValue();
-//				double gain = yesterday/dayBeforeYesterday - 1d;				
-//				if(gain>maxGain){
-//					maxGain = gain;
-//					tickerMaxGain = ticker;
-//				}
-				Double pctRank = (Double) getExchange().getDailyCandle(ticker, 0).getIndicator(pctRankIndicator.getName());
-				if(pctRank == 1d){
-					tickerMaxGain = ticker;
-					maxGain = (Double) getExchange().getDailyCandle(ticker, 0).getIndicator(pctChangeIndicator.getName());
-					break;
+				Double pctChange = (Double) getExchange().getDailyCandle(ticker, 0).getIndicator(pctChangeName);
+				Double pctRank = (Double) getExchange().getDailyCandle(ticker, 0).getIndicator(rankName);
+				Double pctRank2 =	(Double) getExchange().getDailyCandle(ticker, 1).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 2).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 3).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 4).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 5).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 6).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 7).getIndicator(rankName)
+					+(Double) getExchange().getDailyCandle(ticker, 8).getIndicator(rankName);
+					//+(Double) getExchange().getDailyCandle(ticker, 9).getIndicator(rankName);
+				if(pctRank2<2.5 && pctRank > 0.6){
+					_tickers.add(new TickerPerformance(ticker, pctRank));
 				}
 			} catch (Exception e) {
 			}
 		}
-		System.out.println("max gain is "+tickerMaxGain+" "+maxGain*100d+" %");
-		_ticker = tickerMaxGain;
+		Collections.sort(_tickers);
+		Collections.reverse(_tickers);
+		int size = _tickers.size();
+		for(int i=max;i<size;i++)
+			_tickers.remove(max);
 	}
 
 	@Override
 	public void onPreOpen() {
-		try{
-			if(_ticker!=null){
-				_nbSharesTraded = BigDecimal.valueOf((int)(10000/getExchange().getMarketOfficialPrice(_ticker).doubleValue()));
-				getExchange().registerOrder(new MarketOrder(getName(), _ticker, _nbSharesTraded , OrderDirection.Buy, new Date(System.currentTimeMillis())));
-			}
-		}catch (Exception e) {
-		}
+		((TradingAccount)_exchange.getBank().getAccount(getName())).liquidate(_exchange);
 	}
 
 	@Override
@@ -86,17 +98,23 @@ public class FirstStrategy implements IInterdayStrategy {
 
 	@Override
 	public void onPreClose() {
+
+		getDayTopGainer();
 		try{
-			if(_ticker!=null){
-				getExchange().registerOrder(new MarketOrder(getName(), _ticker, _nbSharesTraded , OrderDirection.Sell, new Date(System.currentTimeMillis())));
+			if(_tickers!=null){
+				for(TickerPerformance tp: _tickers){
+					_nbSharesTraded = BigDecimal.valueOf((int)(getExchange().getBank().getAccount(getName()).getBalance("EUR").doubleValue()/max/getExchange().getMarketOfficialPrice(tp.ticker).doubleValue()));
+					getExchange().registerOrder(new MarketOrder(getName(), tp.ticker, _nbSharesTraded , OrderDirection.Buy, new Date(System.currentTimeMillis())));
+				}
 			}
-		}
-		catch (Exception e) {
+		}catch (Exception e) {
 		}
 	}
 
 	@Override
 	public void onClose() {
+		System.out.println("balance: "+_exchange.getBank().getAccount(getName()).getBalance("EUR"));
+		
 	}
 
 	@Override

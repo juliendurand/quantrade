@@ -1,6 +1,8 @@
 package blackbox.bank;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 public interface IAccount {
 	public String getId();
@@ -9,7 +11,8 @@ public interface IAccount {
 	public String getCurrency();
 	public void debit(AccountingEntry entry) throws Exception;
 	public void credit(AccountingEntry entry) throws Exception;
-	public void closingRun(String date);
+	public void closingRun(Date date);
 	public String getBalanceHistory();
+	public List<DailyBalance> getHistory();
 	
 }

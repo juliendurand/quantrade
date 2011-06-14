@@ -1,6 +1,11 @@
 package blackbox.bank;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class CashAccount implements IAccount {
 
@@ -8,7 +13,8 @@ public class CashAccount implements IAccount {
 	private EAccountType _type;
 	private BigDecimal _balance = BigDecimal.ZERO;
 	private String Currency = "EUR";
-	private StringBuffer _balanceHistory = new StringBuffer();
+	private List<DailyBalance> _balanceHistory = new ArrayList<DailyBalance>();
+	private DateFormat _dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
 	
 	public CashAccount(String id, EAccountType type){
 		_id = id;
@@ -64,16 +70,25 @@ public class CashAccount implements IAccount {
 	}
 	
 	@Override
-	public void closingRun(String date){
-		_balanceHistory.append(date);
-		_balanceHistory.append(", ");
-		_balanceHistory.append(getBalance("EUR"));
-		_balanceHistory.append("\n");
+	public void closingRun(Date date){
+		_balanceHistory.add(new DailyBalance(date, getBalance("EUR")));	
+	}
+	
+	@Override
+	public List<DailyBalance> getHistory(){
+		return _balanceHistory;
 	}
 	
 	@Override
 	public String getBalanceHistory(){
-		return _balanceHistory.toString();
+		StringBuffer buffer = new StringBuffer();
+		for(DailyBalance day : _balanceHistory){
+			buffer.append(_dateFormatter.format(day.date));
+			buffer.append(", ");
+			buffer.append(day.value);
+			buffer.append("\n");
+		}
+		return buffer.toString();
 	}
 
 }

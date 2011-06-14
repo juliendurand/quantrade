@@ -16,7 +16,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import blackbox.bank.AccountingEntry;
 import blackbox.bank.Bank;
+import blackbox.bank.EEntryType;
 import blackbox.data.ABCDownloader;
 import blackbox.indicator.IIndicator;
 import blackbox.indicator.PctChangeIndicator;
@@ -35,7 +37,6 @@ public class InterdayExchange implements IExchange {
 	private List<String> _tickers;
 	private Map<String, TimeSerie> _historicalTimeSeries = new HashMap<String, TimeSerie>();
 	private TreeSet<Date> _tradingDays = new TreeSet<Date>();
-	private DateFormat _dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
 	
 	public InterdayExchange(Bank bank){
 		_bank = bank;
@@ -66,6 +67,10 @@ public class InterdayExchange implements IExchange {
 		pctChange.calculate(_historicalTimeSeries, _tradingDays);
 		IIndicator pctRank = new PctRankIndicator();
 		pctRank.calculate(_historicalTimeSeries, _tradingDays);
+	}
+	
+	public Bank getBank(){
+		return _bank;
 	}
 
 	public void registerInterdayStrategy(IInterdayStrategy strategy) {
@@ -118,7 +123,7 @@ public class InterdayExchange implements IExchange {
 			_exchangeDate = day;
 			System.out.println("replay "+day);
 			for(TimeSerie ts : _historicalTimeSeries.values()){
-				ts.setCursorBefore(day);
+				ts.setCursorOn(day);
 			}
 			for(IInterdayStrategy strat : _strategies){
 				strat.onDayStart();
@@ -141,7 +146,7 @@ public class InterdayExchange implements IExchange {
 			for(IInterdayStrategy strat : _strategies){
 				strat.onDayEnd();
 			}
-			_bank.closingRun(_dateFormatter.format(_exchangeDate));
+			_bank.closingRun(_exchangeDate);
 		}
 	}
 	
@@ -241,9 +246,10 @@ public class InterdayExchange implements IExchange {
 						_bank.SellInstrument(order.getAccountId(), order.getTicker(), order.getSize(), getMarketOfficialPrice(order.getTicker()), "EUR");
 						break;
 					}
+					_bank.chargeFees(order.getAccountId(), new BigDecimal(0/*order.getSize().doubleValue()*(getMarketOfficialPrice(order.getTicker())).doubleValue()*0.0005*/),"EUR");
 				}catch (Exception e) {
 					e.printStackTrace();
-				}
+				}		
 				ordersToRemove.add(order);
 			}
 		}

@@ -2,6 +2,7 @@ package blackbox.bank;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Exchanger;
@@ -88,6 +89,13 @@ public class Bank {
 		processTransaction(new Transaction(entries));
 	}
 	
+	public void chargeFees(String accountId, BigDecimal amount, String accountingCurrency)throws Exception{
+		ArrayList<AccountingEntry> entries = new ArrayList<AccountingEntry>();
+		entries.add(new AccountingEntry(EEntryType.credit, accountId, amount, accountingCurrency));
+		entries.add(new AccountingEntry(EEntryType.debit, REVENUE_ACCOUNT, amount, accountingCurrency));
+		processTransaction(new Transaction(entries));
+	}
+	
 	public void BuyInstrument(String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
 		System.out.println(accountId+" buys "+quantity+" "+ticker+" @ "+ price );
 		ArrayList<AccountingEntry> entries = new ArrayList<AccountingEntry>();
@@ -135,7 +143,7 @@ public class Bank {
 		}
 	}
 	
-	public void closingRun(String date){
+	public void closingRun(Date date){
 		for(IAccount account : _accounts.values()){
 			account.closingRun(date);
 		}	

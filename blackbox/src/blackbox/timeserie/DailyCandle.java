@@ -73,7 +73,8 @@ public class DailyCandle {
 	}
 	
 	public Object getIndicator(String name){
-		return _indicators.get(name);
+		Object o = _indicators.get(name);
+		return o;
 	}
 	
 	public void setIndicator(String name, Object o){
