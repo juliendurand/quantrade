@@ -113,7 +113,7 @@ public class FirstStrategy implements IInterdayStrategy {
 
 	@Override
 	public void onClose() {
-		System.out.println("balance: "+_exchange.getBank().getAccount(getName()).getBalance("EUR"));
+		//System.out.println("balance: "+_exchange.getBank().getAccount(getName()).getBalance("EUR"));
 		
 	}
 

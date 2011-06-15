@@ -121,7 +121,7 @@ public class InterdayExchange implements IExchange {
 		SortedSet<Date> range = _tradingDays.subSet(start, end);
 		for(Date day : range){
 			_exchangeDate = day;
-			System.out.println("replay "+day);
+			//System.out.println("replay "+day);
 			for(TimeSerie ts : _historicalTimeSeries.values()){
 				ts.setCursorOn(day);
 			}

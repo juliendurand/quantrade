@@ -97,7 +97,7 @@ public class Bank {
 	}
 	
 	public void BuyInstrument(String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
-		System.out.println(accountId+" buys "+quantity+" "+ticker+" @ "+ price );
+		//System.out.println(accountId+" buys "+quantity+" "+ticker+" @ "+ price );
 		ArrayList<AccountingEntry> entries = new ArrayList<AccountingEntry>();
 		BigDecimal amount = price.multiply(quantity);
 		entries.add(new AccountingEntry(EEntryType.debit, accountId, ticker, quantity, price, amount, accountingCurrency));
@@ -108,7 +108,7 @@ public class Bank {
 	}
 	
 	public void SellInstrument(String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
-		System.out.println(accountId+" sells "+quantity+" "+ticker+" @ "+ price );
+		//System.out.println(accountId+" sells "+quantity+" "+ticker+" @ "+ price );
 		ArrayList<AccountingEntry> entries = new ArrayList<AccountingEntry>();
 		BigDecimal amount = price.multiply(quantity);
 		entries.add(new AccountingEntry(EEntryType.credit, accountId, ticker, quantity, price, amount, accountingCurrency));
