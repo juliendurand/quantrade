@@ -14,7 +14,7 @@ public class CashAccount implements IAccount {
 	private BigDecimal _balance = BigDecimal.ZERO;
 	private String Currency = "EUR";
 	private List<DailyBalance> _balanceHistory = new ArrayList<DailyBalance>();
-	private DateFormat _dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+	public static DateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
 	
 	public CashAccount(String id, EAccountType type){
 		_id = id;
@@ -83,7 +83,7 @@ public class CashAccount implements IAccount {
 	public String getBalanceHistory(){
 		StringBuffer buffer = new StringBuffer();
 		for(DailyBalance day : _balanceHistory){
-			buffer.append(_dateFormatter.format(day.date));
+			buffer.append(dateFormatter.format(day.date));
 			buffer.append(", ");
 			buffer.append(day.value);
 			buffer.append("\n");

@@ -69,12 +69,12 @@ public class FirstStrategy implements IInterdayStrategy {
 					+(Double) getExchange().getDailyCandle(ticker, 2).getIndicator(rankName)
 					+(Double) getExchange().getDailyCandle(ticker, 3).getIndicator(rankName)
 					+(Double) getExchange().getDailyCandle(ticker, 4).getIndicator(rankName)
-					+(Double) getExchange().getDailyCandle(ticker, 5).getIndicator(rankName)
-					+(Double) getExchange().getDailyCandle(ticker, 6).getIndicator(rankName)
-					+(Double) getExchange().getDailyCandle(ticker, 7).getIndicator(rankName)
-					+(Double) getExchange().getDailyCandle(ticker, 8).getIndicator(rankName);
+					+(Double) getExchange().getDailyCandle(ticker, 5).getIndicator(rankName);
+					//+(Double) getExchange().getDailyCandle(ticker, 6).getIndicator(rankName)
+					//+(Double) getExchange().getDailyCandle(ticker, 7).getIndicator(rankName)
+					//+(Double) getExchange().getDailyCandle(ticker, 8).getIndicator(rankName);
 					//+(Double) getExchange().getDailyCandle(ticker, 9).getIndicator(rankName);
-				if(pctRank2<2.5 && pctRank > 0.6){
+				if(pctRank2<1.5 && pctRank > 0.63){
 					_tickers.add(new TickerPerformance(ticker, pctRank));
 				}
 			} catch (Exception e) {
