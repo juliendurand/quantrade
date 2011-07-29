@@ -11,13 +11,13 @@ import blackbox.exchange.IOrder.OrderDirection;
 import blackbox.exchange.InterdayExchange;
 import blackbox.exchange.MarketOrder;
 
-public class CloseOpenStrategy extends AInterdayStrategy {
+public class PerfectCloseOpenStrategy extends AInterdayStrategy {
 
 	private InterdayExchange _exchange;
 	
 	private BigDecimal _nbSharesTraded = BigDecimal.ZERO;
 	
-	public CloseOpenStrategy(InterdayExchange exchange){
+	public PerfectCloseOpenStrategy(InterdayExchange exchange){
 		_exchange = exchange;
 	}
 
@@ -47,10 +47,11 @@ public class CloseOpenStrategy extends AInterdayStrategy {
 
 	@Override
 	public void onPreClose() {
-		String ticker = "AI.PA";
+		
 		try{
-				_nbSharesTraded = BigDecimal.valueOf((int)(getExchange().getBank().getAccount(getName()).getBalance("EUR").doubleValue()/getExchange().getMarketOfficialPrice(ticker).doubleValue()));
-				getExchange().registerOrder(new MarketOrder(getName(), ticker, _nbSharesTraded , OrderDirection.Buy, new Date(System.currentTimeMillis())));
+			String ticker = getDayTopGainer();
+			_nbSharesTraded = BigDecimal.valueOf((int)(getExchange().getBank().getAccount(getName()).getBalance("EUR").doubleValue()/getExchange().getMarketOfficialPrice(ticker).doubleValue()));
+			getExchange().registerOrder(new MarketOrder(getName(), ticker, _nbSharesTraded , OrderDirection.Buy, new Date(System.currentTimeMillis())));
 		}catch (Exception e) {
 		}
 	}
@@ -71,6 +72,27 @@ public class CloseOpenStrategy extends AInterdayStrategy {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private String getDayTopGainer() throws Exception{
+		List<String> tickers = getExchange().getAllTickers();
+		double max = 0d;
+		String bestticker = null;
+		for(String ticker : tickers){
+			try{
+			double change = getExchange().getDailyCandle(ticker, -1).getOpen()/getExchange().getDailyCandle(ticker, 0).getClose();
+			if(change > max){
+				max = change;
+				bestticker = ticker;
+				}
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
+				
+		}if(max>0)
+			return bestticker;
+		else
+			return null;
 	}
 
 }

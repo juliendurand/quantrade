@@ -1,37 +1,35 @@
 package blackbox.exchange;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import blackbox.bank.AccountingEntry;
 import blackbox.bank.Bank;
-import blackbox.bank.EEntryType;
 import blackbox.data.ABCDownloader;
-import blackbox.indicator.IIndicator;
+import blackbox.indicator.ABCDERankIndicator;
+import blackbox.indicator.IntradayChangeIndicator;
+import blackbox.indicator.IntradayRanker;
+import blackbox.indicator.OvernightChangeIndicator;
+import blackbox.indicator.OvernightRanker;
 import blackbox.indicator.PctChangeIndicator;
-import blackbox.indicator.PctRankIndicator;
+import blackbox.indicator.Vol20Indicator;
 import blackbox.timeserie.DailyCandle;
 import blackbox.timeserie.TimeSerie;
 
 public class InterdayExchange implements IExchange {
 	
 	private Bank _bank;
-	private Map<String, BigDecimal> _officialPrice = new HashMap<String, BigDecimal>();
+	private Map<String, Double> _officialPrice = new HashMap<String, Double>();
 	private Map<String, IOrder> _orders = new HashMap<String, IOrder>();
-	private Set<IInterdayStrategy> _strategies = new HashSet<IInterdayStrategy>();
+	private Set<AInterdayStrategy> _strategies = new HashSet<AInterdayStrategy>();
 	private Date _exchangeDate;
 	private long _exchangeTime;
 	private List<String> _tickers;
@@ -63,17 +61,38 @@ public class InterdayExchange implements IExchange {
 			int index = Collections.binarySearch(_tickers, ticker);
 			_tickers.remove(index);
 		}
-		IIndicator pctChange = new PctChangeIndicator();
-		pctChange.calculate(_historicalTimeSeries, _tradingDays);
-		IIndicator pctRank = new PctRankIndicator();
-		pctRank.calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating PctChange");
+		(new PctChangeIndicator()).calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating IntradayPctChange");
+		(new IntradayChangeIndicator()).calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating OvernightPctChange");
+		(new OvernightChangeIndicator()).calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating Intraday Rank");
+		(new IntradayRanker()).calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating Overnight Rank");
+		(new OvernightRanker()).calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating Vol20");
+		(new Vol20Indicator()).calculate(_historicalTimeSeries, _tradingDays);
+		
+		System.out.println("Calculating ABCDE");
+		(new ABCDERankIndicator()).calculate(_historicalTimeSeries, _tradingDays);
 	}
 	
 	public Bank getBank(){
 		return _bank;
 	}
+	
+	public Set<AInterdayStrategy> getInterdayStrategy(){
+		return _strategies;
+	}
 
-	public void registerInterdayStrategy(IInterdayStrategy strategy) {
+	public void registerInterdayStrategy(AInterdayStrategy strategy) {
 		_strategies.add(strategy);
 		_bank.createTradingAccount(strategy.getName());
 		try{
@@ -88,12 +107,12 @@ public class InterdayExchange implements IExchange {
 	 */
 	@Override
 	public BigDecimal getMarketOfficialPrice(String ticker) throws Exception{
-		BigDecimal price = _officialPrice.get(ticker);
+		Double price = _officialPrice.get(ticker);
 		if(price==null)
 		{
 			throw new Exception("Get Official Price - unknown instrument");
 		}
-		return price;
+		return new BigDecimal(price);
 	}
 	
 	@Override
@@ -121,29 +140,29 @@ public class InterdayExchange implements IExchange {
 		SortedSet<Date> range = _tradingDays.subSet(start, end);
 		for(Date day : range){
 			_exchangeDate = day;
-			//System.out.println("replay "+day);
+			System.out.println("replay "+day);
 			for(TimeSerie ts : _historicalTimeSeries.values()){
 				ts.setCursorOn(day);
 			}
-			for(IInterdayStrategy strat : _strategies){
+			for(AInterdayStrategy strat : _strategies){
 				strat.onDayStart();
 			}
-			for(IInterdayStrategy strat : _strategies){
+			for(AInterdayStrategy strat : _strategies){
 				strat.onPreOpen();
 			}
 			open();
-			for(IInterdayStrategy strat : _strategies){
+			for(AInterdayStrategy strat : _strategies){
 				strat.onOpen();
 			}
 			simulateContinuousTrading();
-			for(IInterdayStrategy strat : _strategies){
+			for(AInterdayStrategy strat : _strategies){
 				strat.onPreClose();
 			}
 			close();
-			for(IInterdayStrategy strat : _strategies){
+			for(AInterdayStrategy strat : _strategies){
 				strat.onClose();
 			}
-			for(IInterdayStrategy strat : _strategies){
+			for(AInterdayStrategy strat : _strategies){
 				strat.onDayEnd();
 			}
 			_bank.closingRun(_exchangeDate);
@@ -179,37 +198,25 @@ public class InterdayExchange implements IExchange {
 				if(ts==null){
 					//System.out.println("No timeserie available for "+ticker);
 					continue;
-				}
+					}
 				DailyCandle candle = ts.getCandle(_exchangeDate);
 				if(candle==null){
 					//System.out.println("No candle available for "+ticker);
 					continue;
-				}
+					}
+
+				// day high
 				_officialPrice.put(ticker, candle.getHigh());
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		executeOrders();
-		// day low
-		for(String ticker : _tickers){
-			try{
-				TimeSerie ts = _historicalTimeSeries.get(ticker);
-				if(ts==null){
-					//System.out.println("No timeserie available for "+ticker);
-					continue;
-				}
-				DailyCandle candle = ts.getCandle(_exchangeDate);
-				if(candle==null){
-					//System.out.println("No candle available for "+ticker);
-					continue;
-				}
+				executeOrders();
+				// day low
 				_officialPrice.put(ticker, candle.getLow());
+				executeOrders();
+				
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		executeOrders();
+
 	}
 	
 	private void close(){
@@ -236,22 +243,25 @@ public class InterdayExchange implements IExchange {
 	private void executeOrders(){
 		List<IOrder> ordersToRemove = new ArrayList<IOrder>();
 		for(IOrder order : _orders.values()){
-			if(order.canExecute()){
-				try{
+			try{
+			String ticker = order.getTicker();
+			double price = getMarketOfficialPrice(ticker).doubleValue();
+			if(order.canExecute(price)){
 					switch (order.getDirection()) {
 					case Buy:
-						_bank.BuyInstrument(order.getAccountId(), order.getTicker(), order.getSize(), getMarketOfficialPrice(order.getTicker()), "EUR");
+						_bank.BuyInstrument(_exchangeDate, order.getAccountId(), order.getTicker(), order.getSize(), order.getExecutedPrice(price), "EUR");
 						break;
 					case Sell:
-						_bank.SellInstrument(order.getAccountId(), order.getTicker(), order.getSize(), getMarketOfficialPrice(order.getTicker()), "EUR");
+						_bank.SellInstrument(_exchangeDate, order.getAccountId(), order.getTicker(), order.getSize(), order.getExecutedPrice(price), "EUR");
 						break;
 					}
-					_bank.chargeFees(order.getAccountId(), new BigDecimal(0/*order.getSize().doubleValue()*(getMarketOfficialPrice(order.getTicker())).doubleValue()*0.0005*/),"EUR");
-				}catch (Exception e) {
-					e.printStackTrace();
-				}		
-				ordersToRemove.add(order);
+					_bank.chargeFees(order.getAccountId(), new BigDecimal(order.getSize().doubleValue()*order.getExecutedPrice(price).doubleValue()*0.001),"EUR");
+					ordersToRemove.add(order);
 			}
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+				
 		}
 		for(IOrder order : ordersToRemove){
 			_orders.remove(order.getOrderId());
@@ -291,6 +301,17 @@ public class InterdayExchange implements IExchange {
 			}
 		}
 		return resultSet;
+	}
+	
+	public void clearOrders(String accountId){
+		List<IOrder> orders = getOrders(accountId);
+		for(IOrder order : orders){
+			try {
+				cancelOrder(order.getOrderId());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public List<String> getAllTickers() {

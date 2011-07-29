@@ -10,6 +10,11 @@ public class TickerPerformance implements Comparable<TickerPerformance> {
 	}
 	
 	public int compareTo(TickerPerformance tp){
-		return (int) (performance-tp.performance);
+		double diff = (performance-tp.performance);
+		if(diff>0)
+			return 1;
+		if(diff<0)
+			return -1;
+		return 0;
 	}
 }

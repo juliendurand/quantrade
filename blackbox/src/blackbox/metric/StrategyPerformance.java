@@ -2,14 +2,13 @@ package blackbox.metric;
 
 import java.util.List;
 
-import javax.management.StandardEmitterMBean;
-
 import blackbox.bank.CashAccount;
 import blackbox.bank.DailyBalance;
 
 public class StrategyPerformance {
 	
 	public int nbDays = 0;
+	public int _nbTrades;
 	public double Max = 0d;
 	private double _minMax = 0d;
 	public double PctMaxDrawDown = 0d;
@@ -27,12 +26,17 @@ public class StrategyPerformance {
 	public double DownStdDev = 0d;
 	public double SQN = 0d;
 	public double SQNPlus = 0d;
+	public double TradeExpectancy = 0d;
+	public double SQNTrade = 0d;
+	public double SQNTradePlus = 0d;
 	
-	public StrategyPerformance(List<DailyBalance> history){
-		calculateMetrics(history);
+	
+	public StrategyPerformance(List<DailyBalance> history, int nbTrades){
+		calculateMetrics(history, nbTrades);
 	}
 	
-	public void calculateMetrics(List<DailyBalance> history){
+	public void calculateMetrics(List<DailyBalance> history, int nbTrades){
+		_nbTrades = nbTrades;
 		double yesterdayValue = 0d;
 		double todayValue = 0d;
 		boolean start = true;
@@ -66,7 +70,9 @@ public class StrategyPerformance {
 				double drawdown = (Max-_minMax)/Max*100;
 				if(drawdown>PctMaxDrawDown){
 					PctMaxDrawDown = drawdown;
-					System.out.println("new max drawdown on "+CashAccount.dateFormatter.format(day.date)+" "+PctMaxDrawDown +" %");
+				}
+				if(drawdown>10){
+					System.out.println("new drawdown on "+CashAccount.dateFormatter.format(day.date)+" "+drawdown +" %");
 				}
 				Max = todayValue;			
 				_minMax = Max;
@@ -82,7 +88,9 @@ public class StrategyPerformance {
 		PctWinningDays = NbWinningDays/nbDays;
 		PctUnchangedDays = NbUnchangedDays/nbDays;
 		PctLosingDays = NbLosingDays/nbDays;
+		TradeExpectancy = Expectancy;
 		Expectancy/=nbDays;
+		TradeExpectancy = TradeExpectancy/_nbTrades;
 		StdDev = Math.sqrt(StdDev/nbDays-(Expectancy+1)*(Expectancy+1));
 		UpExpectancy/=NbWinningDays;
 		UpStdDev = Math.sqrt(UpStdDev/NbWinningDays-(UpExpectancy+1)*(UpExpectancy+1));
@@ -90,6 +98,9 @@ public class StrategyPerformance {
 		DownStdDev = Math.sqrt(DownStdDev/NbLosingDays-(DownExpectancy+1)*(DownExpectancy+1));
 		SQN = Math.sqrt(nbDays)*Expectancy/StdDev;
 		SQNPlus = Math.sqrt(nbDays)*Expectancy/DownStdDev;
+		SQNTrade = Math.sqrt(_nbTrades)*TradeExpectancy/StdDev;
+		SQNTradePlus = Math.sqrt(_nbTrades)*TradeExpectancy/DownStdDev;
+		
 	}
 	
 	public String toString(){
@@ -99,6 +110,9 @@ public class StrategyPerformance {
 		buffer.append("------------------------------------------\n");
 		buffer.append("Nb trading days: ");
 		buffer.append(nbDays);
+		buffer.append("\n");
+		buffer.append("Nb trades: ");
+		buffer.append(_nbTrades);
 		buffer.append("\n");
 		buffer.append("% winning days: ");
 		buffer.append(PctWinningDays*100);
@@ -111,6 +125,9 @@ public class StrategyPerformance {
 		buffer.append(" %\n");
 		buffer.append("Daily expectancy: ");
 		buffer.append(Expectancy*100);
+		buffer.append(" %\n");
+		buffer.append("Trade Daily expectancy: ");
+		buffer.append(TradeExpectancy*100);
 		buffer.append(" %\n");
 		buffer.append("Daily standard deviation: ");
 		buffer.append(StdDev*100);
@@ -135,6 +152,12 @@ public class StrategyPerformance {
 		buffer.append("\n");
 		buffer.append("Enhanced trategy quality number: ");
 		buffer.append(SQNPlus);
+		buffer.append("\n");
+		buffer.append("Trade Strategy quality number: ");
+		buffer.append(SQNTrade);
+		buffer.append("\n");
+		buffer.append("Trade Enhanced trategy quality number: ");
+		buffer.append(SQNTradePlus);
 		buffer.append("\n");
 		return buffer.toString();
 	}

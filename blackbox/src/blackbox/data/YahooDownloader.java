@@ -28,11 +28,11 @@ public class YahooDownloader {
 				e.printStackTrace();
 			}
 			System.out.println(" -> OK");
-			try {
+			/*try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
+			}*/
 		}
 	}
 	

@@ -11,8 +11,13 @@ public class MarketOrder extends AOrder{
 	}
 
 	@Override
-	public boolean canExecute() {
+	public boolean canExecute(double price) {
 		return true;
+	}
+	
+	@Override
+	public BigDecimal getExecutedPrice(double marketPrice) {
+		return new BigDecimal(marketPrice);
 	}
 
 }

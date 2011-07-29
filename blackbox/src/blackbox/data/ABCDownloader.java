@@ -3,16 +3,12 @@ package blackbox.data;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -50,7 +46,7 @@ public class ABCDownloader {
 						"/wEWJQL58tAdAo+CnjsC7LLy0AMCzsPYqw4CzM7D7gECt7vrug0C6ey36QwCmLHeqQ4Cs5r8vggC58Gmvw4C2qfbwg4Cl4yI/QYC2PCj0wsC3LqTugIC8brTugICpqOX+QgCwsOgvgECz+3rxA8Ci4u3xg0C9Nmq0gsC48j0ogICl5jS5Q0CsYn5lwsCoMSE1A0C9e377AwCmZrc5gsCzeqNkAIC5LLOmgMC+sauvAwC88aGwwQCnpu8mAgCjv/pwg8C6+3nrgwC/PC9+gcCnOOzhwECn5vYgwgC9aDN9gh5NAMpv9uGgiyOV61kL4NR+/x42A=="));
 		// parameters.add(new BasicNameValuePair("ctl00$txtAutoComplete",""));
 		parameters.add(new BasicNameValuePair("ctl00$BodyABC$srdp", "on"));
-		parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistAp", "on"));
+		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistAp", "on"));
 		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistBp", "on"));
 		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$eurolistCp", "on"));
 		//parameters.add(new BasicNameValuePair("ctl00$BodyABC$alterp", "on"));
@@ -77,7 +73,7 @@ public class ABCDownloader {
 	}
 
 	public static void downloadTickers() throws UnsupportedEncodingException,
-			IOException, ClientProtocolException, Exception {
+		IOException, ClientProtocolException, Exception {
 		System.out.print("Downloading list of tickers");
 		String content = getTickers();
 		Downloader.saveToFile(content, fileName);
@@ -85,7 +81,7 @@ public class ABCDownloader {
 	}
 	
 	public static List<String> getAllTickers(){
-		List<String> tickers = new ArrayList<String>();
+		Set<String> tickers = new HashSet<String>();
 		try{
 			FileReader reader = new FileReader(fileName);
 			BufferedReader in = new BufferedReader(reader);
@@ -103,8 +99,9 @@ public class ABCDownloader {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		Collections.sort(tickers);
-		return tickers;
+		List<String> tickerList = new ArrayList<String>(tickers);
+		Collections.sort(tickerList);
+		return tickerList;
 	}
 	
 	

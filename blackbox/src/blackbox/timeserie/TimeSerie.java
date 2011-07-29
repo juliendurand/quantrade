@@ -1,6 +1,5 @@
 package blackbox.timeserie;
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,12 +32,12 @@ public class TimeSerie {
 		content.remove(0);
 		for(String[] row : content){			
 		    Date date = (Date)_dateFormatter.parse(row[0]);
-		    BigDecimal open = new BigDecimal(row[1]);
-		    BigDecimal high = new BigDecimal(row[2]);
-		    BigDecimal low = new BigDecimal(row[3]);
-		    BigDecimal close = new BigDecimal(row[4]);
-		    BigDecimal volume = new BigDecimal(row[5]);
-		    BigDecimal adjClose = new BigDecimal(row[6]);
+		    double open = Double.parseDouble(row[1]);
+		    double high = Double.parseDouble(row[2]);
+		    double low = Double.parseDouble(row[3]);
+		    double close = Double.parseDouble(row[4]);
+		    double volume = Double.parseDouble(row[5]);
+		    double adjClose = Double.parseDouble(row[6]);
 		    
 		    DailyCandle candle = new DailyCandle();	    
 		    candle.setDate(date);
@@ -70,6 +69,8 @@ public class TimeSerie {
 		int index = Collections.binarySearch(_dateIndex, date);
 		if(index>0){ // traded on that day
 			_cursor = index;
+		}else{
+			_cursor=-1;
 		}
 	}
 	
@@ -94,6 +95,9 @@ public class TimeSerie {
 		int position = _cursor-period;
 		if(position<0){
 			throw new Exception("TimeSerie error - request data before the begining of the serie");
+		}
+		if(position>=_candles.size()){
+			throw new Exception("TimeSerie error - request data after the end of the serie");
 		}
 		return _candles.get(_dateIndex.get(position));
 	}

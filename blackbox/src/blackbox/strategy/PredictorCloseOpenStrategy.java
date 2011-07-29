@@ -1,6 +1,8 @@
 package blackbox.strategy;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -10,15 +12,21 @@ import blackbox.exchange.IOrder;
 import blackbox.exchange.IOrder.OrderDirection;
 import blackbox.exchange.InterdayExchange;
 import blackbox.exchange.MarketOrder;
+import blackbox.predictor.APredictor;
 
-public class CloseOpenStrategy extends AInterdayStrategy {
+public class PredictorCloseOpenStrategy extends AInterdayStrategy {
 
 	private InterdayExchange _exchange;
+	private APredictor _predictor;
 	
 	private BigDecimal _nbSharesTraded = BigDecimal.ZERO;
 	
-	public CloseOpenStrategy(InterdayExchange exchange){
+	private int _maxShareTraded = 1;
+	private List<TickerPerformance> _tickers = new ArrayList<TickerPerformance>();
+	
+	public PredictorCloseOpenStrategy(InterdayExchange exchange, APredictor predictor){
 		_exchange = exchange;
+		_predictor = predictor;
 	}
 
 	@Override
@@ -47,11 +55,15 @@ public class CloseOpenStrategy extends AInterdayStrategy {
 
 	@Override
 	public void onPreClose() {
-		String ticker = "AI.PA";
-		try{
+		getBestPredictions();
+		for(TickerPerformance tp : _tickers){	
+			String ticker = tp.ticker;
+			try{
 				_nbSharesTraded = BigDecimal.valueOf((int)(getExchange().getBank().getAccount(getName()).getBalance("EUR").doubleValue()/getExchange().getMarketOfficialPrice(ticker).doubleValue()));
+				_nbSharesTraded = _nbSharesTraded.divide(new BigDecimal(_maxShareTraded));
 				getExchange().registerOrder(new MarketOrder(getName(), ticker, _nbSharesTraded , OrderDirection.Buy, new Date(System.currentTimeMillis())));
-		}catch (Exception e) {
+			}catch (Exception e) {
+			}
 		}
 	}
 
@@ -70,6 +82,25 @@ public class CloseOpenStrategy extends AInterdayStrategy {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private void getBestPredictions(){
+		List<String> tickers = getExchange().getAllTickers();
+		List<TickerPerformance> tickerList = new ArrayList<TickerPerformance>();
+		for(String ticker : tickers){
+			try{
+				double[] input= new double[5];
+				tickerList.add(new TickerPerformance(ticker, _predictor.estimate(input)));
+			}catch (Exception e) {
+				// TODO: handle exception
+			}		
+		}
+		Collections.sort(tickerList);
+		Collections.reverse(tickerList);
+		_tickers = tickerList;
+		if(tickerList.size()>_maxShareTraded){
+			_tickers = tickerList.subList(0,_maxShareTraded);
 		}
 	}
 

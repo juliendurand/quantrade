@@ -13,7 +13,7 @@ import blackbox.exchange.IOrder.OrderDirection;
 import blackbox.exchange.InterdayExchange;
 import blackbox.exchange.MarketOrder;
 
-public class FirstStrategy extends AInterdayStrategy {
+public class AlexisStrategy extends AInterdayStrategy {
 
 	private InterdayExchange _exchange;
 	
@@ -21,7 +21,7 @@ public class FirstStrategy extends AInterdayStrategy {
 	private BigDecimal _nbSharesTraded = BigDecimal.ZERO;
 	private int max =1;
 	
-	public FirstStrategy(InterdayExchange exchange){
+	public AlexisStrategy(InterdayExchange exchange){
 		_exchange = exchange;
 	}
 
@@ -48,21 +48,21 @@ public class FirstStrategy extends AInterdayStrategy {
 		_tickers.clear();
 		for(String ticker : tickers){
 			try {
-				Double pctChange = (Double) getExchange().getDailyCandle(ticker, 0).getPctChange();
+				//Double pctChange = (Double) getExchange().getDailyCandle(ticker, 0).getPctChange();
 				Double pctRank = (Double) getExchange().getDailyCandle(ticker, 0).getRank();
-				Double pctRank2 =	(Double) getExchange().getDailyCandle(ticker, 1).getRank()
-					+(Double) getExchange().getDailyCandle(ticker, 2).getRank()
-					+(Double) getExchange().getDailyCandle(ticker, 3).getRank()
-					+(Double) getExchange().getDailyCandle(ticker, 4).getRank()
-					+(Double) getExchange().getDailyCandle(ticker, 5).getRank()
-					//pctRank2/=(Double) getExchange().getDailyCandle(ticker, 1).getIndicator("Vol20")*100/1.5;
-					+(Double) getExchange().getDailyCandle(ticker, 6).getRank()
-					+(Double) getExchange().getDailyCandle(ticker, 7).getRank()
-					+(Double) getExchange().getDailyCandle(ticker, 8).getRank();
-					//+(Double) getExchange().getDailyCandle(ticker, 9).getIndicator(rankName);
-				if(pctRank2<2.5 && pctRank > 0.6){
-					tickerList.add(new TickerPerformance(ticker, pctRank));
-				}
+				//Double pctRank2 =	(Double) getExchange().getDailyCandle(ticker, 1).getRank()
+				//	+(Double) getExchange().getDailyCandle(ticker, 2).getRank()
+				//	+(Double) getExchange().getDailyCandle(ticker, 3).getRank()
+				//	+(Double) getExchange().getDailyCandle(ticker, 4).getRank()
+				//	+(Double) getExchange().getDailyCandle(ticker, 5).getRank()
+				//pctRank2/=(Double) getExchange().getDailyCandle(ticker, 1).getIndicator("Vol20")*100/1.5;
+				//	+(Double) getExchange().getDailyCandle(ticker, 6).getRank()
+				//	+(Double) getExchange().getDailyCandle(ticker, 7).getRank()
+				//	+(Double) getExchange().getDailyCandle(ticker, 8).getRank();
+				//	//+(Double) getExchange().getDailyCandle(ticker, 9).getIndicator(rankName);
+				//if(pctRank2<2.5 && pctRank > 0.6){
+				tickerList.add(new TickerPerformance(ticker, pctRank));
+				//}
 			} catch (Exception e) {
 			}
 		}
@@ -76,7 +76,7 @@ public class FirstStrategy extends AInterdayStrategy {
 
 	@Override
 	public void onPreOpen() {
-		((TradingAccount)_exchange.getBank().getAccount(getName())).liquidate(_exchange);
+		
 	}
 
 	@Override
@@ -85,6 +85,7 @@ public class FirstStrategy extends AInterdayStrategy {
 
 	@Override
 	public void onPreClose() {
+		((TradingAccount)_exchange.getBank().getAccount(getName())).liquidate(_exchange);
 
 		getDayTopGainer();
 		try{

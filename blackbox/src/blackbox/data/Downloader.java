@@ -29,11 +29,13 @@ public class Downloader {
 		    //System.out.println(content);
 		} catch (Exception e) {
 			System.err.println("Yahoo Downloader - Error processing Get request.");
+			e.printStackTrace();
 		}	
 		return content;
 	}
 	
 	public static void saveToFile(String content, String filename) throws Exception{
+		//System.out.println(content);
 		File file = new File(filename);
 		if(!file.exists()){
 			file.createNewFile();
@@ -42,6 +44,20 @@ public class Downloader {
 		writer.write(content);
 		writer.flush();
 		writer.close();
+	}
+	
+	public static String convertStreamToString2(InputStream is)
+		throws IOException {
+		StringWriter writer=new StringWriter();
+		InputStreamReader streamReader=new InputStreamReader(is);
+		//le buffer permet le readline
+		BufferedReader buffer=new BufferedReader(streamReader);
+		String line="";
+		while ( null!=(line=buffer.readLine())){
+			writer.write(line); 
+		}
+		// Sortie finale dans le String
+		return  writer.toString();
 	}
 	
 	public static String convertStreamToString(InputStream is)
@@ -67,6 +83,7 @@ public class Downloader {
 			} finally {
 				is.close();
 			}
+			writer.flush();
 			return writer.toString();
 		} else {
 			return "";

@@ -8,7 +8,7 @@ import blackbox.timeserie.TimeSerie;
 
 public interface IIndicator {
 	
-	public String getName();
+	//public String getName();
 	public void calculate(Map<String, TimeSerie> data, TreeSet<Date> dates);
 
 }

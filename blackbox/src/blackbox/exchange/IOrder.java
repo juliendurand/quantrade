@@ -16,6 +16,7 @@ public interface IOrder {
 	public BigDecimal getSize();
 	public OrderDirection getDirection();
 	public Date getExpiry();
-	public boolean canExecute();
+	public BigDecimal getExecutedPrice(double marketPrice);
+	public boolean canExecute(double price);
 	public void cancel();
 }

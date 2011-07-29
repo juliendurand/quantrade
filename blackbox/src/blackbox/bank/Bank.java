@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Exchanger;
 
 public class Bank {
 	
@@ -15,10 +14,15 @@ public class Bank {
 
 	private String _name = "Blackbox Bank";
 	private String _currency = "EUR";
-	private Map<String, IAccount> _accounts = new HashMap<String, IAccount>();
+	private Map<String, IAccount> _accounts;
 	private IMarketPriceSource _marketPriceSource;
 
 	public Bank(){
+		reset();
+	}
+	
+	public void reset(){
+		_accounts = new HashMap<String, IAccount>();
 		addAccount(new CashAccount(CASH_ACCOUNT, EAccountType.Asset));
 		addAccount(new TradingAccount(EXCHANGE_ACCOUNT, EAccountType.Asset, _marketPriceSource));
 		addAccount(new CashAccount(REVENUE_ACCOUNT, EAccountType.Liability));
@@ -96,7 +100,7 @@ public class Bank {
 		processTransaction(new Transaction(entries));
 	}
 	
-	public void BuyInstrument(String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
+	public void BuyInstrument(Date date, String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
 		//System.out.println(accountId+" buys "+quantity+" "+ticker+" @ "+ price );
 		ArrayList<AccountingEntry> entries = new ArrayList<AccountingEntry>();
 		BigDecimal amount = price.multiply(quantity);
@@ -105,9 +109,10 @@ public class Bank {
 		entries.add(new AccountingEntry(EEntryType.credit, EXCHANGE_ACCOUNT, ticker, quantity, price, amount, accountingCurrency));
 		entries.add(new AccountingEntry(EEntryType.debit, CASH_ACCOUNT, amount, accountingCurrency));
 		processTransaction(new Transaction(entries));
+		((TradingAccount)getAccount(accountId)).registerTrade("buy", ticker, quantity, price, date);
 	}
 	
-	public void SellInstrument(String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
+	public void SellInstrument(Date date, String accountId, String ticker, BigDecimal quantity, BigDecimal price, String accountingCurrency) throws Exception {
 		//System.out.println(accountId+" sells "+quantity+" "+ticker+" @ "+ price );
 		ArrayList<AccountingEntry> entries = new ArrayList<AccountingEntry>();
 		BigDecimal amount = price.multiply(quantity);
@@ -116,6 +121,7 @@ public class Bank {
 		entries.add(new AccountingEntry(EEntryType.debit, EXCHANGE_ACCOUNT, ticker, quantity, price, amount, accountingCurrency));
 		entries.add(new AccountingEntry(EEntryType.credit, CASH_ACCOUNT, amount, accountingCurrency));
 		processTransaction(new Transaction(entries));
+		((TradingAccount)getAccount(accountId)).registerTrade("sell", ticker, quantity, price, date);
 	}
 	
 	public void processTransaction(Transaction t) throws Exception{

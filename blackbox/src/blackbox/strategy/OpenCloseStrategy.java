@@ -1,26 +1,17 @@
 package blackbox.strategy;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import blackbox.bank.TradingAccount;
-import blackbox.exchange.IInterdayStrategy;
+import blackbox.exchange.AInterdayStrategy;
 import blackbox.exchange.IOrder;
+import blackbox.exchange.IOrder.OrderDirection;
 import blackbox.exchange.InterdayExchange;
 import blackbox.exchange.MarketOrder;
-import blackbox.exchange.IOrder.OrderDirection;
-import blackbox.indicator.IIndicator;
-import blackbox.indicator.PctChangeIndicator;
-import blackbox.indicator.PctRankIndicator;
-import blackbox.timeserie.DailyCandle;
 
-public class OpenCloseStrategy implements IInterdayStrategy {
+public class OpenCloseStrategy extends AInterdayStrategy {
 
 	private InterdayExchange _exchange;
 	
@@ -28,11 +19,6 @@ public class OpenCloseStrategy implements IInterdayStrategy {
 	
 	public OpenCloseStrategy(InterdayExchange exchange){
 		_exchange = exchange;
-	}
-	
-	@Override
-	public String getName() {
-		return "OpenCloseStrategy";
 	}
 
 	@Override

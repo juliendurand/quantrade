@@ -1,20 +1,23 @@
 package blackbox.bank;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.http.impl.cookie.DateUtils;
-
+import blackbox.exchange.IOrder.OrderDirection;
 import blackbox.exchange.InterdayExchange;
 import blackbox.exchange.MarketOrder;
-import blackbox.exchange.IOrder.OrderDirection;
 
 public class TradingAccount extends CashAccount{
 
 	private Map<String, Position> _positions = new HashMap<String, Position>();
 	private IMarketPriceSource _marketPriceSource;
+	private List<AccountingEntry> _operations = new ArrayList<AccountingEntry>();
+	private StringBuffer _trades = new StringBuffer();
+	private int _nbTrades = 0;
 	
 	public TradingAccount(String id, EAccountType type, IMarketPriceSource source) {
 		super(id, type);
@@ -30,16 +33,22 @@ public class TradingAccount extends CashAccount{
 			if(p.getQuantity().compareTo(BigDecimal.ZERO)>0){
 				exchange.registerOrder(new MarketOrder(getId(), p.getTicker(), p.getQuantity(), OrderDirection.Sell, new Date(System.currentTimeMillis())));
 			}else{
-				exchange.registerOrder(new MarketOrder(getId(), p.getTicker(), p.getQuantity(), OrderDirection.Buy, new Date(System.currentTimeMillis())));
+				exchange.registerOrder(new MarketOrder(getId(), p.getTicker(), p.getQuantity().negate(), OrderDirection.Buy, new Date(System.currentTimeMillis())));
 			}
 		}
+	}
+	
+	public int getNbTrades(){
+		return _nbTrades;
 	}
 
 	@Override
 	public void debit(AccountingEntry entry) throws Exception {
 		if(entry.getSubject()==null){
-			super.debit(entry);}
+			super.debit(entry);
+			}
 		else{
+			_nbTrades++;
 			switch (getType()) {
 			case Asset:
 				substractFromPosition(entry.getSubject(), entry.getQuantity(), entry.getPrice());
@@ -51,6 +60,8 @@ public class TradingAccount extends CashAccount{
 				throw new Exception();
 			}
 		}
+
+		//_operations.add(entry);
 	}
 
 	@Override
@@ -69,6 +80,7 @@ public class TradingAccount extends CashAccount{
 				throw new Exception();
 			}
 		}
+		//_operations.add(entry);
 	}
 	
 	private void addToPosition(String ticker, BigDecimal quantity, BigDecimal price){
@@ -93,7 +105,11 @@ public class TradingAccount extends CashAccount{
 		return super.getBalance("EUR");
 	}
 	
-	public BigDecimal getPositions(){
+	public Map<String, Position> getPositions(){
+		return _positions;
+	}
+	
+	public BigDecimal getSumPositions(){
 		BigDecimal sumPositions = BigDecimal.ZERO;
 		for(Position p : _positions.values()){
 			BigDecimal quantity = p.getQuantity();
@@ -112,9 +128,41 @@ public class TradingAccount extends CashAccount{
 	
 	@Override
 	public BigDecimal getBalance(String currency) {
-		return getCash().add(getPositions());
+		return getCash().add(getSumPositions());
+	}
+	
+	public String getOperations(){
+		StringBuffer buffer = new StringBuffer();
+		for(AccountingEntry op : _operations){
+			buffer.append(op.getType().name());
+			buffer.append(", ");
+			buffer.append(op.getQuantity());
+			buffer.append(", ");
+			buffer.append(op.getSubject());
+			buffer.append(", ");
+			buffer.append(op.getPrice());
+			buffer.append("\n");
+		}
+		return buffer.toString();
 	}
 
+	public void registerTrade(String type, String ticker, BigDecimal volume, BigDecimal price, Date date){
+		_trades.append(type);
+		_trades.append(", ");
+		_trades.append(TradingAccount.dateFormatter.format(date));
+		_trades.append(", ");
+		_trades.append(ticker);
+		_trades.append(", ");
+		_trades.append(volume);
+		_trades.append(", ");
+		_trades.append(price);
+		_trades.append("\n");
+	}
+	
+	public String getTrades(){
+		return _trades.toString();
+	}
+	
 	public String toString(){
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("------------------------------------------\n");
@@ -143,7 +191,7 @@ public class TradingAccount extends CashAccount{
 			buffer.append("\n");
 		}
 		buffer.append("\nTotal positions: ");
-		buffer.append(getPositions());
+		buffer.append(getSumPositions());
 		buffer.append(" ");
 		buffer.append(getCurrency());
 		buffer.append("\n\n");

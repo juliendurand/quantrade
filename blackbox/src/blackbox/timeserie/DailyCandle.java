@@ -1,21 +1,25 @@
 package blackbox.timeserie;
 
-import java.math.BigDecimal;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DailyCandle {
 	
 	private Date _date;
-	private BigDecimal _open;
-	private BigDecimal _high;
-	private BigDecimal _low;
-	private BigDecimal _close;
-	private BigDecimal _volume;
-	private BigDecimal _adjClose;
-	private Map<String, Object> _indicators = new HashMap<String, Object>();
-	
+	private double _open;
+	private double _high;
+	private double _low;
+	private double _close;
+	private double _volume;
+	private double _adjClose;
+	private double _pctChange;
+	public double intradayPctChange;
+	public double overnightPctChange;
+	public double intradayRank;
+	public double overnightRank;
+	private double _rank;
+	private double _vol20;
+	public char _quintile;
+
 	public Date getDate() {
 		return _date;
 	}
@@ -24,61 +28,76 @@ public class DailyCandle {
 		_date = date;
 	}
 
-	public BigDecimal getOpen() {
+	public double getOpen() {
 		return _open;
 	}
 	
-	public void setOpen(BigDecimal open) {
+	public void setOpen(double open) {
 		_open = open;
 	}
 	
-	public BigDecimal getHigh() {
+	public double getHigh() {
 		return _high;
 	}
 	
-	public void setHigh(BigDecimal high) {
+	public void setHigh(double high) {
 		_high = high;
 	}
 	
-	public BigDecimal getLow() {
+	public double getLow() {
 		return _low;
 	}
 	
-	public void setLow(BigDecimal low) {
+	public void setLow(double low) {
 		_low = low;
 	}
 	
-	public BigDecimal getClose() {
+	public double getClose() {
 		return _close;
 	}
 	
-	public void setClose(BigDecimal close) {
+	public void setClose(double close) {
 		_close = close;
 	}
 	
-	public BigDecimal getVolume() {
+	public double getVolume() {
 		return _volume;
 	}
 	
-	public void setVolume(BigDecimal volume) {
+	public void setVolume(double volume) {
 		_volume = volume;
 	}
 	
-	public void setAdjustedClose(BigDecimal adjustedClose){
+	public void setAdjustedClose(double adjustedClose){
 		_adjClose = adjustedClose;
 	}
 	
-	public BigDecimal getAdjustedClose(){
+	public double getAdjustedClose(){
 		return _adjClose;
 	}
-	
-	public Object getIndicator(String name){
-		Object o = _indicators.get(name);
-		return o;
+
+	public double getPctChange() {
+		return _pctChange;
 	}
-	
-	public void setIndicator(String name, Object o){
-		_indicators.put(name, o);
+
+	public void setPctChange(double pctChange) {
+		this._pctChange = pctChange;
+	}
+
+	public double getRank() {
+		return _rank;
+	}
+
+	public void setRank(double rank) {
+		this._rank = rank;
+	}
+
+	public double getVol20() {
+		return _vol20;
+	}
+
+	public void setVol20(double vol20) {
+		this._vol20 = vol20;
 	}
 	
 }
